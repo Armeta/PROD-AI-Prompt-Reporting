@@ -3,7 +3,6 @@ from snowflake.snowpark.functions import col
 # Visualizations 
 import streamlit as st
 import time
-import toml
 
 # data manipulation 
 from sklearn.metrics.pairwise import cosine_similarity
@@ -14,12 +13,8 @@ import json
 import struct
 
 # setup connection with snowflake
-def snowconnection():
-    f = open('./.streamlit/secrets.toml', 'r')
-    connection_config = toml.load(f)
-    f.close()
+def snowconnection(connection_config):
     session = Session.builder.configs(connection_config).create()
-
     return session
 
 def save_UserCache(i, content):
@@ -97,89 +92,69 @@ def manage_Cache():
 
 # load options file and set up model
 @st.cache_resource()
-def get_Model():
-    # load largemodel bin file
-    # model_bin = open('./LocalModel/pytorch_model.bin', 'wb')
-    # shard = open('./LocalModel/shards/01_shard_pytorch_model.bin', 'rb')
-    # model_bin.write(shard.read())
-    # shard.close()
-    # shard = open('./LocalModel/shards/02_shard_pytorch_model.bin', 'rb')
-    # model_bin.write(shard.read())
-    # shard.close()
-    # shard = open('./LocalModel/shards/03_shard_pytorch_model.bin', 'rb')
-    # model_bin.write(shard.read())
-    # shard.close()
-    # shard = open('./LocalModel/shards/04_shard_pytorch_model.bin', 'rb')
-    # model_bin.write(shard.read())
-    # shard.close()
-    # model_bin.close()
-    
-    # model selection
-    modelName = 'all-distilroberta-v1'
-    #modelName = './LocalModel/'
-    model = SentenceTransformer(modelName)    
-    return model
+def env_Setup(_session):
 
-@st.cache_resource()
-def get_Data(_session):
-    # # Open and collect options
-    options_dash  = _session.table("OPTIONS_DASHBOARD") 
-    options_query = _session.table("OPTIONS_QUERY")
-        
-    #recieve options and their encodings and return
-    dash_rows  = options_dash.select(['URL', 'ENCODING']).filter(col('URL').isNotNull() & col('ENCODING').isNotNull()).to_pandas().values.tolist()
-    query_rows = options_query.select(['RESULT_CACHE', 'ENCODING']).filter(col('RESULT_CACHE').isNotNull() & col('ENCODING').isNotNull()).to_pandas().values.tolist()
-    dash_opts  = [row[0] for row in dash_rows]
-    query_opts = [row[0] for row in query_rows]
-    dash_enc   = [parseBinaryEncoding(bytearray(row[1])) for row in dash_rows]
-    query_enc  = [parseBinaryEncoding(bytearray(row[1])) for row in query_rows]
-
-    return dash_enc, dash_opts, query_enc, query_opts
-
-def env_Setup(_session, Title, Layout, SideBarState, Menu_Items, Title_Image_Path):
-    # PC Icon
-    with open('src/txt/price-chopper-base64.txt') as f:
-        UserAvatar = f.read()
-    f.close()
-
-    # User Avatar Icon
-    with open('src/txt/bot-icon.txt') as f:
+    # Bot Avatar Icon
+    with open('src/txt/armeta-icon_Base64Source.txt') as f:
         BotAvatar = f.read()
     f.close()
 
-    # Page Config
-    st.set_page_config(
-        page_title            = Title,
-        page_icon             = UserAvatar,
-        layout                = Layout,
-        initial_sidebar_state = SideBarState,
-        menu_items            = Menu_Items
-    )
-
-    # Page Header/Subheader
-    if(len(Title_Image_Path) > 0):
-        st.image(Title_Image_Path)
-
-    if(len(Title) > 0):
-        st.subheader(Title)
+    # User Avatar Icon
+    with open('src/txt/usericon_Base64Source.txt') as f:
+        UserAvatar = f.read()
+    f.close()
 
     # Open CSS file
     with open('src/css/style.css') as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
     f.close()
 
-    model = get_Model()
-    dash_enc, dash_opts, query_enc, query_opts = get_Data(_session)
+    # load largemodel bin file
+    model_bin = open('./LocalModel/pytorch_model.bin', 'wb')
+    shard = open('./LocalModel/shards/01_shard_pytorch_model.bin', 'rb')
+    model_bin.write(shard.read())
+    shard.close()
+    shard = open('./LocalModel/shards/02_shard_pytorch_model.bin', 'rb')
+    model_bin.write(shard.read())
+    shard.close()
+    shard = open('./LocalModel/shards/03_shard_pytorch_model.bin', 'rb')
+    model_bin.write(shard.read())
+    shard.close()
+    shard = open('./LocalModel/shards/04_shard_pytorch_model.bin', 'rb')
+    model_bin.write(shard.read())
+    shard.close()
+    model_bin.close()
+
+    # model selection
+    #modelName = 'all-distilroberta-v1'
+    modelName = './LocalModel/'
+    model = SentenceTransformer(modelName)
+
+    # # Open and collect options
+    if(modelName == './LocalModel/'):
+        options_dash  = _session.table("\"OptionsDashboardLocal\"") 
+        options_query = _session.table("\"OptionsQueryLocal\"")
+    else:
+        options_dash  = _session.table("\"OptionsDashboard\"") 
+        options_query = _session.table("\"OptionsQuery\"")
     
-        # (re)-initialize current chat 
-    if 'messages' not in st.session_state:
-        st.session_state['messages'] = []
-    if 'number' not in st.session_state:
-        st.session_state.number = 0
-    if 'FeedbackRating' not in st.session_state:
-        st.session_state.FeedbackRating = ''
-    if 'FeedbackText' not in st.session_state:
-            st.session_state.FeedbackText = ''
+    options_dash  = _session.table("OPTIONS_DASHBOARD") 
+    options_query = _session.table("OPTIONS_QUERY")
+    
+    
+    #recieve options and their encodings and return
+    dash_rows  = options_dash.select(['URL', 'ENCODING']).filter(col('URL').isNotNull() & col('ENCODING').isNotNull()).to_pandas().values.tolist()
+    query_rows = options_query.select(['RESULT_CACHE', 'ENCODING']).filter(col('RESULT_CACHE').isNotNull() & col('ENCODING').isNotNull()).to_pandas().values.tolist()
+
+    dash_opts  = [row[0] for row in dash_rows]
+    query_opts = [row[0] for row in query_rows]
+    dash_enc   = [parseBinaryEncoding(bytearray(row[1])) for row in dash_rows]
+    query_enc  = [parseBinaryEncoding(bytearray(row[1])) for row in query_rows]
+
+    # Page Header/Subheader
+    st.title("💬 arai") 
+    with st.chat_message("assistant", avatar = BotAvatar):
+        st.write("How can I help you?")    
 
     return model, dash_enc, dash_opts, query_enc, query_opts, BotAvatar, UserAvatar
 
@@ -200,4 +175,4 @@ def do_Get(prompt, _model, dash_enc, dash_opts, query_enc, query_opts):
     # pick and return a query answer
     sim = cosine_similarity([encoding], query_enc)
     query_answer = query_opts[sim[0].tolist().index(max(sim[0]))]
-    return dash_answer, query_answer, max(sim[0])
+    return dash_answer, query_answer
