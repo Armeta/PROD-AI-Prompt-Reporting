@@ -2,7 +2,8 @@
 import streamlit as st
 from   PIL import Image
 import sys
-from streamlit_toggle import toggle
+
+
 from streamlit_extras.switch_page_button import switch_page
 # add src to system path
 sys.path.append('src')
