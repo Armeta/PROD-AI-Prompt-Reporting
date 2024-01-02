@@ -161,7 +161,7 @@ def env_Setup(_session, Title, Layout, SideBarState, Menu_Items, Title_Image_Pat
         st.image(Title_Image_Path)
 
     if(len(Title) > 0):
-        st.subheader(Title, divider='rainbow')
+        st.subheader(Title)
 
     # Open CSS file
     with open('src/css/style.css') as f:
