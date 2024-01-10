@@ -1,11 +1,10 @@
 from snowflake.snowpark import Session
 from snowflake.snowpark.functions import col
-import os
 # Visualizations 
 import streamlit as st
 import time
 import toml
-
+import os
 # data manipulation 
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
@@ -15,17 +14,28 @@ import json
 import struct
 
 # setup connection with snowflake
-def snowconnection():
-    path = os.path.realpath(__file__)
-    dir = os.path.dirname(path) 
-    dir = dir.replace('\src\lib', '')
-    os.chdir(dir) 
-
-    f = open('./.streamlit/secrets.toml', 'r')
-    connection_config = toml.load(f)
-    f.close()
-    session = Session.builder.configs(connection_config).create()
-
+def snowconnection(path):
+    if "Demo_App" in path: 
+        connection_parameters = {
+        "account"                  : st.secrets.db_credentials.account,
+        "user"                     : st.secrets.db_credentials.user,
+        "password"                 : st.secrets.db_credentials.password,
+        "role"                     : st.secrets.db_credentials.role,  
+        "warehouse"                : st.secrets.db_credentials.warehouse,   
+        "database"                 : st.secrets.db_credentials.database,   
+        "schema"                   : st.secrets.db_credentials.schema,
+        "client_session_keep_alive": st.secrets.db_credentials.client_session_keep_alive,
+        }          
+        session = Session.builder.configs(connection_parameters).create()
+    else:
+        path = os.path.realpath(__file__)
+        dir  = os.path.dirname(path) 
+        dir  = dir.replace('\src\lib', '')
+        os.chdir(dir) 
+    
+        f = open('./.streamlit/secrets.toml', 'r')
+        connection_config = toml.load(f)
+        session = Session.builder.configs(connection_config).create()
     return session
 
 def save_UserCache(i, content):

@@ -2,16 +2,17 @@
 import streamlit as st
 from   PIL import Image
 from streamlit_extras.switch_page_button import switch_page
-#import extra_streamlit_components as stx
+import os
+import sys
 
 # custom functions
+sys.path.append('src')
 from src.lib import code_library
-import json
 
 def main():
 
     # Get connection string paramaters
-    session = code_library.snowconnection()    
+    session = code_library.snowconnection(os.path.realpath(__file__))    
     
     # gets mapping file and their encodings as well as meta data for the model being used
     model, dash_enc, dash_opts, query_enc, query_opts, BotAvatar, UserAvatar  \
