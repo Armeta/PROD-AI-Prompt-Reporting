@@ -1,5 +1,6 @@
 from snowflake.snowpark import Session
 from snowflake.snowpark.functions import col
+import os
 # Visualizations 
 import streamlit as st
 import time
@@ -15,6 +16,11 @@ import struct
 
 # setup connection with snowflake
 def snowconnection():
+    path = os.path.realpath(__file__)
+    dir = os.path.dirname(path) 
+    dir = dir.replace('\src\lib', '')
+    os.chdir(dir) 
+
     f = open('./.streamlit/secrets.toml', 'r')
     connection_config = toml.load(f)
     f.close()
