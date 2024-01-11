@@ -134,6 +134,16 @@
         ,   "urlfilter":"{\"salesGeography\":[\"SALES_GEOGRAPHY_PARAMETER\"]}"
         ,   "urlquery":"{\"timeframe\":TIMEFRAME_PARAMETER}"
         ,   "urlview":""
+        },
+        {   "QuestionID":"Q15"
+        ,   "parameters": ["TIMEFRAME_PARAMETER"]
+        ,   "desc":"The department with the largest net gain in TIMEFRAME_PARAMETER timeframe" 
+        ,   "questions":["Which department has the largest net gain in sales TIMEFRAME_PARAMETER?"]
+        ,   "query":"WITH DEPARTMENTSALES_TYvLY AS (SELECT A.SALES_DEPARTMENT_GROUP_DISPLAY_LABEL, SUM(NET_SALES_DOLLARS_TY), SUM(NET_SALES_DOLLARS_LY) ,(SUM(NET_SALES_DOLLARS_TY) - SUM(NET_SALES_DOLLARS_LY)) AS DIFF FROM PC.OPPORTUNITY_LOCATOR OP JOIN PC.LKP_SALES_DEPARTMENT_GROUP A ON OP.SALES_DEPARTMENT_GROUP_ID = A.SALES_DEPARTMENT_GROUP_ID JOIN PC.LKP_TIMEFRAME B ON OP.TIMEFRAME_ID = B.TIMEFRAME_ID WHERE B.TIMEFRAME_ID = TIMEFRAME_PARAMETER AND OP.USED_IN_METRICS = TRUE AND A.IS_ACTIVE = TRUE AND B.IS_ACTIVE = TRUE AND OP.STORE_CONCEPT_ID = 1 GROUP BY A.SALES_DEPARTMENT_GROUP_DISPLAY_LABEL ) SELECT TOP 1 CONCAT(SALES_DEPARTMENT_GROUP_DISPLAY_LABEL, ' is the department with the largest net gain in sales in the DESCRIPTION_TIMEFRAME_PARAMETER timeframe with ', IFF(DIFF < 0, '-', '') ,'$', LTRIM(TO_VARCHAR(ABS(DIFF), '999,999,990')),IFF(DIFF < 0, ' less', ' more'), ' in sales') AS Results FROM DEPARTMENTSALES_TYvLY ORDER BY DIFF DESC"
+        ,   "urlpage":"opportunity-locator"
+        ,   "urlfilter":""
+        ,   "urlquery":"{\"timeframe\":TIMEFRAME_PARAMETER}"
+        ,   "urlview":"{\"tab::timeline\":\"departmentDrivers\"}"
         }
 
     ]
