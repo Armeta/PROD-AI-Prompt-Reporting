@@ -75,7 +75,7 @@
         }
     },
     "templates":[
-        {   "QuestionID":"Q1"
+		{   "QuestionID":"Q1"
         ,   "parameters": ["TIMEFRAME_PARAMETER"]
 		,   "desc":"Total sales TIMEFRAME_PARAMETER."
 		,   "questions":["What were my total sales TIMEFRAME_PARAMETER?", "What were my total TIMEFRAME_PARAMETER sales?", "What are the total TIMEFRAME_PARAMETER sales?", "What are the total sales TIMEFRAME_PARAMETER?", "What is the total sale amount TIMEFRAME_PARAMETER?"]
@@ -134,6 +134,16 @@
         ,   "urlfilter":"{\"salesGeography\":[\"SALES_GEOGRAPHY_PARAMETER\"]}"
         ,   "urlquery":"{\"timeframe\":TIMEFRAME_PARAMETER}"
         ,   "urlview":""
+        } ,
+        {   "QuestionID":"Q10"
+        ,   "parameters": ["EXCLUDE_DEPARTMENTGROUP_PARAMETER", "TIMEFRAME_PARAMETER", "SALES_GEOGRAPHY_PARAMETER"]
+        ,   "desc":"The total sales TIMEFRAME_PARAMETER for SALES_GEOGRAPHY_PARAMETER exluding EXCLUDE_DEPARTMENTGROUP_PARAMETER."
+        ,   "questions":["What were my total sales TIMEFRAME_PARAMETER for SALES_GEOGRAPHY_PARAMETER exluding EXCLUDE_DEPARTMENTGROUP_PARAMETER?"]
+        ,   "query":"SELECT CONCAT('The total sales in the ', B.TIMEFRAME_DESC ,' timeframe for ', C.SALES_GEOGRAPHY_DISPLAY_LABEL, ' excluding the ', A.SALES_DEPARTMENT_GROUP_DISPLAY_LABEL,' department is $', LTRIM(TO_VARCHAR(SUM(OP.NET_SALES_DOLLARS_TY), '999,999,999,990')) ) FROM PC.OPPORTUNITY_LOCATOR OP JOIN PC.LKP_SALES_DEPARTMENT_GROUP A ON A.SALES_DEPARTMENT_GROUP_ID NOT IN (EXCLUDE_DEPARTMENTGROUP_PARAMETER) AND A.SALES_DEPARTMENT_GROUP_ID <> -1 JOIN PC.LKP_TIMEFRAME B ON OP.TIMEFRAME_ID = B.TIMEFRAME_ID JOIN PC.LKP_SALES_GEOGRAPHY C ON OP.SALES_GEOGRAPHY_ID = C.SALES_GEOGRAPHY_ID WHERE OP.SALES_DEPARTMENT_GROUP_ID IN (EXCLUDE_DEPARTMENTGROUP_PARAMETER) AND OP.TIMEFRAME_ID = TIMEFRAME_PARAMETER AND OP.SALES_GEOGRAPHY_ID = SALES_GEOGRAPHY_PARAMETER AND OP.USED_IN_METRICS = TRUE AND STORE_CONCEPT_ID = 1 GROUP BY A.SALES_DEPARTMENT_GROUP_DISPLAY_LABEL, B.TIMEFRAME_DESC, C.SALES_GEOGRAPHY_DISPLAY_LABEL;"
+        ,   "urlpage":"opportunity-locator"
+        ,   "urlfilter":"{\"departmentDrivers\":[EXCLUDE_DEPARTMENTGROUP_PARAMETER],\"salesGeography\":[\"SALES_GEOGRAPHY_PARAMETER\"]}"
+        ,   "urlquery":"{\"timeframe\":TIMEFRAME_PARAMETER}"
+        ,   "urlview":"{\"tab::timeline\":\"departmentDrivers\"}"
         },
         {   "QuestionID":"Q15"
         ,   "parameters": ["TIMEFRAME_PARAMETER"]
@@ -144,7 +154,36 @@
         ,   "urlfilter":""
         ,   "urlquery":"{\"timeframe\":TIMEFRAME_PARAMETER}"
         ,   "urlview":"{\"tab::timeline\":\"departmentDrivers\"}"
+        },
+        {   "QuestionID":"Q16"
+        ,   "parameters": ["TIMEFRAME_PARAMETER"]  
+        ,    "desc":"The department with the largest net gain excluding pharmacy in TIMEFRAME_PARAMETER timeframe" 
+        ,   "questions":["Which department has the largest net gain in sales TIMEFRAME_PARAMETER excluding pharmacy?"]
+        ,   "query":"WITH DEPARTMENTSALES_TYvLY AS (SELECT A.SALES_DEPARTMENT_GROUP_DISPLAY_LABEL, SUM(NET_SALES_DOLLARS_TY), SUM(NET_SALES_DOLLARS_LY) ,(SUM(NET_SALES_DOLLARS_TY) - SUM(NET_SALES_DOLLARS_LY)) AS DIFF FROM PC.OPPORTUNITY_LOCATOR OP JOIN PC.LKP_SALES_DEPARTMENT_GROUP A ON OP.SALES_DEPARTMENT_GROUP_ID = A.SALES_DEPARTMENT_GROUP_ID JOIN PC.LKP_TIMEFRAME B ON OP.TIMEFRAME_ID = B.TIMEFRAME_ID WHERE B.TIMEFRAME_ID = TIMEFRAME_PARAMETER AND OP.USED_IN_METRICS = TRUE AND A.IS_ACTIVE = TRUE AND B.IS_ACTIVE = TRUE AND OP.STORE_CONCEPT_ID = 1 AND A.SALES_DEPARTMENT_GROUP_DISPLAY_LABEL <> 'Pharmacy' GROUP BY A.SALES_DEPARTMENT_GROUP_DISPLAY_LABEL ) SELECT TOP 1 CONCAT(SALES_DEPARTMENT_GROUP_DISPLAY_LABEL, ' is the department (excluding pharmacy) with the largest net gain in sales in the DESCRIPTION_TIMEFRAME_PARAMETER timeframe with ', IFF(DIFF < 0, '-', '') ,'$', LTRIM(TO_VARCHAR(ABS(DIFF), '999,999,990')),IFF(DIFF < 0, ' less', ' more'), ' in sales') AS Results FROM DEPARTMENTSALES_TYvLY ORDER BY DIFF DESC "
+        ,   "urlpage":"opportunity-locator"
+        ,   "urlfilter":""
+        ,   "urlquery":"{\"timeframe\":TIMEFRAME_PARAMETER}"
+        ,   "urlview":"{\"tab::timeline\":\"departmentDrivers\"}"
+        },
+        {   "QuestionID":"Q19"
+        ,   "parameters": ["TIMEFRAME_PARAMETER"]  
+        ,   "desc":"The best performing department in TIMEFRAME_PARAMETER timeframe" 
+        ,   "questions":["Which department performed the best TIMEFRAME_PARAMETER?"]
+        ,   "query":"WITH DEPARTMENTSALES_TYvLY AS (SELECT A.SALES_DEPARTMENT_GROUP_DISPLAY_LABEL, SUM(NET_SALES_DOLLARS_TY), SUM(NET_SALES_DOLLARS_LY) ,(SUM(NET_SALES_DOLLARS_TY)) AS DIFF FROM PC.OPPORTUNITY_LOCATOR OP JOIN PC.LKP_SALES_DEPARTMENT_GROUP A ON OP.SALES_DEPARTMENT_GROUP_ID = A.SALES_DEPARTMENT_GROUP_ID JOIN PC.LKP_TIMEFRAME B ON OP.TIMEFRAME_ID = B.TIMEFRAME_ID WHERE B.TIMEFRAME_ID = TIMEFRAME_PARAMETER AND OP.USED_IN_METRICS = TRUE AND A.IS_ACTIVE = TRUE AND B.IS_ACTIVE = TRUE AND OP.STORE_CONCEPT_ID = 1 GROUP BY A.SALES_DEPARTMENT_GROUP_DISPLAY_LABEL) SELECT TOP 1 CONCAT(SALES_DEPARTMENT_GROUP_DISPLAY_LABEL, ' is the best performing department in the DESCRIPTION_TIMEFRAME_PARAMETER timeframe with ', IFF(DIFF < 0, '-', '') ,'$', LTRIM(TO_VARCHAR(ABS(DIFF), '999,999,990')), ' in sales') AS Results FROM DEPARTMENTSALES_TYvLY ORDER BY DIFF DESC "
+        ,   "urlpage":"opportunity-locator"
+        ,   "urlfilter":""
+        ,   "urlquery":"{\"timeframe\":TIMEFRAME_PARAMETER}"
+        ,   "urlview":"{\"tab::timeline\":\"departmentDrivers\"}"
+        },
+        {   "QuestionID":"Q20"
+        ,   "parameters": ["TIMEFRAME_PARAMETER"]  
+        ,   "desc":"The best performing department in TIMEFRAME_PARAMETER timeframe excluding pharmacy" 
+        ,   "questions":["Which department performed the best TIMEFRAME_PARAMETER excluding pharmacy?"]
+        ,   "query":"WITH DEPARTMENTSALES_TYvLY AS (SELECT A.SALES_DEPARTMENT_GROUP_DISPLAY_LABEL, SUM(NET_SALES_DOLLARS_TY), SUM(NET_SALES_DOLLARS_LY) ,(SUM(NET_SALES_DOLLARS_TY)) AS DIFF FROM PC.OPPORTUNITY_LOCATOR OP JOIN PC.LKP_SALES_DEPARTMENT_GROUP A ON OP.SALES_DEPARTMENT_GROUP_ID = A.SALES_DEPARTMENT_GROUP_ID JOIN PC.LKP_TIMEFRAME B ON OP.TIMEFRAME_ID = B.TIMEFRAME_ID WHERE B.TIMEFRAME_ID = TIMEFRAME_PARAMETER AND OP.USED_IN_METRICS = TRUE AND A.IS_ACTIVE = TRUE AND B.IS_ACTIVE = TRUE AND OP.STORE_CONCEPT_ID = 1 AND A.SALES_DEPARTMENT_GROUP_DISPLAY_LABEL <> 'Pharmacy' GROUP BY A.SALES_DEPARTMENT_GROUP_DISPLAY_LABEL) SELECT TOP 1 CONCAT(SALES_DEPARTMENT_GROUP_DISPLAY_LABEL, ' is the best performing department (excluding pharmacy) in the DESCRIPTION_TIMEFRAME_PARAMETER timeframe with ', IFF(DIFF < 0, '-', '') ,'$', LTRIM(TO_VARCHAR(ABS(DIFF), '999,999,990')), ' in sales') AS Results FROM DEPARTMENTSALES_TYvLY ORDER BY DIFF DESC "
+        ,   "urlpage":"opportunity-locator"
+        ,   "urlfilter":""
+        ,   "urlquery":"{\"timeframe\":TIMEFRAME_PARAMETER}"
+        ,   "urlview":"{\"tab::timeline\":\"departmentDrivers\"}"
         }
-
     ]
 }
